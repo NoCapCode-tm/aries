@@ -1,6 +1,4 @@
-import os
-import json
-import datetime
+import os, json, datetime
 from telegram import Bot
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -8,37 +6,20 @@ from oauth2client.service_account import ServiceAccountCredentials
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 GOOGLE_CREDS_JSON = os.getenv("GOOGLE_CREDS_JSON")
 
-bot = Bot(token=BOT_TOKEN)
+bot = Bot(BOT_TOKEN)
 
-# Google auth
-scope = [
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/drive"
-]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(
-    json.loads(GOOGLE_CREDS_JSON), scope
-)
+scope = ["https://spreadsheets.google.com/feeds","https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(GOOGLE_CREDS_JSON), scope)
 client = gspread.authorize(creds)
 
-employees_sheet = client.open("Aries Daily Updates").worksheet("Employees")
+employees = client.open("Aries Daily Updates").worksheet("Employees")
 
-def is_weekday():
-    return datetime.datetime.today().weekday() < 5
-
-if is_weekday():
-    employees = employees_sheet.get_all_records()
-    for emp in employees:
-        if str(emp["Active"]).strip().upper() != "YES":
-            continue
-
-        try:
-            bot.send_message(
-                chat_id=int(emp["TelegramID"]),
-                text=f"""Hey {emp['FirstName']} 👋
-Hope you had a productive day.
-
-Quick check-in — what did you work on today at NoCapCode?
-Just reply to this message (1–2 lines is perfect)."""
-            )
-        except Exception as e:
-            print(f"Skip {emp['FirstName']}: {e}")
+if datetime.datetime.today().weekday() < 5:
+    for e in employees.get_all_records():
+        if e["Active"] == "YES":
+            try:
+                bot.send_message(
+                    chat_id=int(e["TelegramID"]),
+                    text=f"Hey {e['FirstName']} 👋\nWhat did you work on today at NoCapCode?"
+                )
+            except: pass
