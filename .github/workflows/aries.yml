@@ -1,8 +1,8 @@
-name: Aries
+name: Aries Daily Ping
 
 on:
   schedule:
-    - cron: "*/2 * * * *"
+    - cron: "30 14 * * 1-5"   # 8 PM IST (Mon–Fri)
   workflow_dispatch:
 
 jobs:
@@ -16,12 +16,10 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - run: pip install gspread oauth2client python-telegram-bot==20.6
 
-      - name: Run Aries Bot
-        run: python bot.py
+      - name: Run ping
+        run: python ping.py
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          GROUP_ID: ${{ secrets.GROUP_ID }}
           GOOGLE_CREDS_JSON: ${{ secrets.GOOGLE_CREDS_JSON }}
