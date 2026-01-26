@@ -10,7 +10,7 @@ GROUP_ID = os.getenv("GROUP_ID")
 
 # Google Sheets setup
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("GOOGLE_CREDS_JSON", scope)
 client = gspread.authorize(creds)
 sheet = client.open("Aries Daily Updates").sheet1
 
