@@ -2,7 +2,7 @@ name: Aries
 
 on:
   schedule:
-    - cron: "30 14 * * 1-5"   # 8 PM IST (Mon–Fri)
+    - cron: "*/2 * * * *"
   workflow_dispatch:
 
 jobs:
