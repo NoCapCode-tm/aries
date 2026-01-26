@@ -8,18 +8,31 @@ GOOGLE_CREDS_JSON = os.getenv("GOOGLE_CREDS_JSON")
 
 bot = Bot(BOT_TOKEN)
 
-scope = ["https://spreadsheets.google.com/feeds","https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(GOOGLE_CREDS_JSON), scope)
+scope = [
+    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/drive"
+]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(
+    json.loads(GOOGLE_CREDS_JSON), scope
+)
 client = gspread.authorize(creds)
 
-employees = client.open("Aries Daily Updates").worksheet("Employees")
+employees_sheet = client.open("Aries Daily Updates").worksheet("Employees")
 
+# Run only on weekdays
 if datetime.datetime.today().weekday() < 5:
-    for e in employees.get_all_records():
-        if e["Active"] == "YES":
-            try:
-                bot.send_message(
-                    chat_id=int(e["TelegramID"]),
-                    text=f"Hey {e['FirstName']} 👋\nWhat did you work on today at NoCapCode?"
-                )
-            except: pass
+    for emp in employees_sheet.get_all_records():
+        if str(emp["Active"]).strip().upper() != "YES":
+            continue
+
+        try:
+            bot.send_message(
+                chat_id=int(emp["TelegramID"]),
+                text=f"""Hey {emp['FirstName']} 👋
+Hope you had a productive day.
+
+Quick check-in — what did you work on today at NoCapCode?
+Just reply to this message (1–2 lines is perfect)."""
+            )
+        except Exception as e:
+            print("Skip:", emp["FirstName"], e)
