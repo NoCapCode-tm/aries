@@ -9,16 +9,23 @@ GOOGLE_CREDS_JSON = os.getenv("GOOGLE_CREDS_JSON")
 
 bot = Bot(BOT_TOKEN)
 
-scope = ["https://spreadsheets.google.com/feeds","https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(GOOGLE_CREDS_JSON), scope)
+scope = [
+    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/drive"
+]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(
+    json.loads(GOOGLE_CREDS_JSON), scope
+)
 client = gspread.authorize(creds)
 
-updates_sheet = client.open("Aries Daily Updates").worksheet("Updates")
+spreadsheet = client.open("Aries Daily Updates")
+updates_sheet = spreadsheet.worksheet("Updates")
+meta_sheet = spreadsheet.worksheet("Meta")
 
-offset_file = "offset.txt"
-offset = int(open(offset_file).read()) if os.path.exists(offset_file) else 0
+# Read last update offset
+last_update_id = int(meta_sheet.cell(2, 2).value)
 
-updates = bot.get_updates(offset=offset, timeout=10)
+updates = bot.get_updates(offset=last_update_id, timeout=10)
 
 for u in updates:
     if not u.message or not u.message.text:
@@ -28,6 +35,7 @@ for u in updates:
     msg = u.message.text
     now = datetime.datetime.now()
 
+    # Save update
     updates_sheet.append_row([
         now.strftime("%Y-%m-%d"),
         user.first_name,
@@ -36,16 +44,22 @@ for u in updates:
         now.strftime("%H:%M")
     ])
 
+    # Forward to founders group
     bot.send_message(
         chat_id=GROUP_ID,
-        text=f"🟢 Daily Update\n👤 {user.first_name}\n📝 {msg}"
+        text=f"""🟢 Daily Update
+👤 {user.first_name}
+📝 {msg}
+⏰ {now.strftime('%H:%M')}"""
     )
 
+    # Acknowledge employee
     bot.send_message(
         chat_id=user.id,
         text="Thanks! Your update is noted 👍"
     )
 
-    offset = u.update_id + 1
+    last_update_id = u.update_id + 1
 
-open(offset_file,"w").write(str(offset))
+# Save offset
+meta_sheet.update("B2", str(last_update_id))
