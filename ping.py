@@ -8,6 +8,7 @@ GOOGLE_CREDS_JSON = os.getenv("GOOGLE_CREDS_JSON")
 
 bot = Bot(BOT_TOKEN)
 
+# Google auth
 scope = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive"
@@ -19,9 +20,10 @@ client = gspread.authorize(creds)
 
 employees_sheet = client.open("Aries Daily Updates").worksheet("Employees")
 
-# Run only on weekdays
+# Weekday check
 if datetime.datetime.today().weekday() < 5:
     for emp in employees_sheet.get_all_records():
+
         if str(emp["Active"]).strip().upper() != "YES":
             continue
 
@@ -35,4 +37,4 @@ Quick check-in — what did you work on today at NoCapCode?
 Just reply to this message (1–2 lines is perfect)."""
             )
         except Exception as e:
-            print("Skip:", emp["FirstName"], e)
+            print(f"Skip {emp['FirstName']}: {e}")
