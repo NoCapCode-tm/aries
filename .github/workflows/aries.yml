@@ -1,9 +1,9 @@
-name: Aries Ops Bot
+name: Aries Ops Bot (TEST MODE)
 
 on:
   schedule:
-    - cron: "30 13 * * 1-5"   # 7 PM IST → ping
-    - cron: "30 18 * * 1-5"   # 12 AM IST → collect
+    - cron: "45 0 * * 1-5"   # 6:15 AM IST → ping (TEST)
+    - cron: "50 0 * * 1-5"   # 6:20 AM IST → collect (TEST)
   workflow_dispatch:
     inputs:
       job:
@@ -33,7 +33,7 @@ jobs:
       # --------------------
       - name: Ping employees
         if: |
-          github.event_name == 'schedule' && github.event.schedule == '30 13 * * 1-5' ||
+          github.event_name == 'schedule' && github.event.schedule == '45 0 * * 1-5' ||
           github.event_name == 'workflow_dispatch' && inputs.job == 'ping'
         run: python ping.py
         env:
@@ -45,7 +45,7 @@ jobs:
       # --------------------
       - name: Collect replies
         if: |
-          github.event_name == 'schedule' && github.event.schedule == '30 18 * * 1-5' ||
+          github.event_name == 'schedule' && github.event.schedule == '50 0 * * 1-5' ||
           github.event_name == 'workflow_dispatch' && inputs.job == 'collect'
         run: python collect.py
         env:
