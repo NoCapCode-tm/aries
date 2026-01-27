@@ -2,8 +2,8 @@ name: Aries Ops Bot (TEST MODE)
 
 on:
   schedule:
-    - cron: "45 0 * * 1-5"   # 6:15 AM IST → ping (TEST)
-    - cron: "50 0 * * 1-5"   # 6:20 AM IST → collect (TEST)
+  - cron: "55 0 * * 1-5"   # 6:25 AM IST → ping (TEST)
+  - cron: "0 1 * * 1-5"    # 6:30 AM IST → collect (TEST)
   workflow_dispatch:
     inputs:
       job:
